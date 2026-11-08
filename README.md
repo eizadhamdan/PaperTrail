@@ -1,8 +1,8 @@
-﻿# ScholarGraph
+﻿# PaperTrail
 
 > A research assistant that combines knowledge-graph traversal and semantic paper search to answer questions about academic literature.
 
-ScholarGraph connects structured paper relationships (authors, categories, and methods) with unstructured abstract text. The Python backend uses **LangGraph** for multi-stage workflow orchestration, **Neo4j** for graph queries, **ChromaDB** for semantic retrieval, **BAAI/bge-reranker-base** for neural reranking, and **Google Gemini** for query translation and grounded answer synthesis. A separate **React** frontend communicates with the backend over HTTP.
+PaperTrail connects structured paper relationships (authors, categories, and methods) with unstructured abstract text. The Python backend uses **LangGraph** for multi-stage workflow orchestration, **Neo4j** for graph queries, **ChromaDB** for semantic retrieval, **BAAI/bge-reranker-base** for neural reranking, and **Google Gemini** for query translation and grounded answer synthesis. A separate **React** frontend communicates with the backend over HTTP.
 
 ---
 
@@ -82,11 +82,11 @@ ScholarGraph connects structured paper relationships (authors, categories, and m
 
 ### GraphRAG & LangGraph Orchestration
 
-Retrieval-Augmented Generation (RAG) grounds language models in structured facts and textual evidence. ScholarGraph orchestrates a multi-step GraphRAG pipeline built with **LangGraph (`StateGraph`)**, which structures state transitions between query processing, dual-channel retrieval, candidate fusion, graph expansion, cross-encoder reranking, and citation synthesis.
+Retrieval-Augmented Generation (RAG) grounds language models in structured facts and textual evidence. PaperTrail orchestrates a multi-step GraphRAG pipeline built with **LangGraph (`StateGraph`)**, which structures state transitions between query processing, dual-channel retrieval, candidate fusion, graph expansion, cross-encoder reranking, and citation synthesis.
 
 ### Knowledge Graph
 
-A knowledge graph represents entities as **nodes** and their connections as **relationships**. ScholarGraph models `Paper`, `Author`, `Category`, and `Concept` nodes. Relationships include `AUTHORED`, `IN_CATEGORY`, and `USES_METHOD`. Neo4j stores this structure, and Cypher expresses multi-hop traversals such as "which authors published in this category using a specific AI concept?"
+A knowledge graph represents entities as **nodes** and their connections as **relationships**. PaperTrail models `Paper`, `Author`, `Category`, and `Concept` nodes. Relationships include `AUTHORED`, `IN_CATEGORY`, and `USES_METHOD`. Neo4j stores this structure, and Cypher expresses multi-hop traversals such as "which authors published in this category using a specific AI concept?"
 
 ### Candidate Fusion & Graph Expansion
 
@@ -105,7 +105,7 @@ The top reranked evidence payloads are formatted into a strict context prompt fo
 
 ## Data Pipeline
 
-The pipeline starts with paper metadata and abstracts, enriches each paper with author/category/method relationships, and produces dense embeddings of abstract text. Graph triples are imported into Neo4j; precomputed embeddings are imported into the persistent ChromaDB collection named `arxiv_papers`. The existing `data/README.md` documents the artifact fields and formats. The paper-collection script is Colab-oriented, while local extraction and database import utilities live in `backend/src/scholargraph/`.
+The pipeline starts with paper metadata and abstracts, enriches each paper with author/category/method relationships, and produces dense embeddings of abstract text. Graph triples are imported into Neo4j; precomputed embeddings are imported into the persistent ChromaDB collection named `arxiv_papers`. The existing `data/README.md` documents the artifact fields and formats. The paper-collection script is Colab-oriented, while local extraction and database import utilities live in `backend/src/PaperTrail/`.
 
 The repository may not contain every generated artifact: embedding Parquet files and the persistent Chroma index are local/generated data and should be provisioned for the environment. Neo4j must also be running and hydrated before research queries can return useful results.
 
@@ -128,15 +128,15 @@ For a local chat session, start the FastAPI server from `backend/`, then start V
 
 The landing page offers example queries, a query box, and access to previous conversations.
 
-![ScholarGraph landing page](pictures/picture_1.png)
+![PaperTrail landing page](pictures/picture_1.png)
 
 ### Example 1: 
 
-![ScholarGraph response about graph neural networks](pictures/picture_2.png)
+![PaperTrail response about graph neural networks](pictures/picture_2.png)
 
 ### Example 2: 
 
-![ScholarGraph response about retrieval-augmented generation](pictures/picture_3.png)
+![PaperTrail response about retrieval-augmented generation](pictures/picture_3.png)
 
 ---
 
