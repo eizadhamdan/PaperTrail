@@ -69,7 +69,7 @@ class AgentResult:
 # =====================================================================
 
 
-class ScholarGraphState(TypedDict, total=False):
+class PaperTrailState(TypedDict, total=False):
     user_query: str
     model_name: str
     conversation_history: list[dict[str, str]]
@@ -256,7 +256,7 @@ def format_grounded_answer(
 # =====================================================================
 
 
-class ScholarGraphAgent:
+class PaperTrailAgent:
     def __init__(self):
         self.client = genai.Client(api_key=GEMINI_API_KEY)
         # BAAI BGE Reranker cross-encoder for precise neural relevance scoring
@@ -265,7 +265,7 @@ class ScholarGraphAgent:
 
     def _build_graph(self):
         """Constructs and compiles the complete LangGraph DAG pipeline."""
-        workflow = StateGraph(ScholarGraphState)
+        workflow = StateGraph(PaperTrailState)
 
         # Nodes
         workflow.add_node("query_understanding", self._node_query_understanding)
@@ -292,7 +292,7 @@ class ScholarGraphAgent:
     # LangGraph Nodes
     # -----------------------------------------------------------------
 
-    def _node_query_understanding(self, state: ScholarGraphState) -> dict[str, Any]:
+    def _node_query_understanding(self, state: PaperTrailState) -> dict[str, Any]:
         """Node 1: Parses query intent and outputs a structured Cypher query and search terms."""
         if not check_graph_connection():
             raise GraphUnavailableError(
@@ -335,7 +335,7 @@ class ScholarGraphAgent:
         print(f"[Graph Query] Generated Cypher:\n  {cypher}")
         return {"cypher_query": cypher, "semantic_query": user_query}
 
-    def _node_graph_retrieval(self, state: ScholarGraphState) -> dict[str, Any]:
+    def _node_graph_retrieval(self, state: PaperTrailState) -> dict[str, Any]:
         """Node 2: Executes Cypher graph traversal against Neo4j with keyword fallbacks."""
         cypher = state["cypher_query"]
         user_query = state["user_query"]
@@ -382,7 +382,7 @@ class ScholarGraphAgent:
             "graph_query_attempts": query_attempts,
         }
 
-    def _node_semantic_retrieval(self, state: ScholarGraphState) -> dict[str, Any]:
+    def _node_semantic_retrieval(self, state: PaperTrailState) -> dict[str, Any]:
         """Node 3: Executes vector similarity search against ChromaDB."""
         semantic_query = state.get("semantic_query", state["user_query"])
         print("[3. Semantic Retrieval] Performing dense vector search in ChromaDB...")
@@ -390,7 +390,7 @@ class ScholarGraphAgent:
         print(f"[Vector Tool] Retrieved {len(vector_results)} paper candidates.")
         return {"vector_raw_results": vector_results}
 
-    def _node_candidate_fusion(self, state: ScholarGraphState) -> dict[str, Any]:
+    def _node_candidate_fusion(self, state: PaperTrailState) -> dict[str, Any]:
         """Node 4: Candidate Fusion using Reciprocal Rank Fusion (RRF)."""
         graph_raw = state.get("graph_raw_results", [])
         vector_raw = state.get("vector_raw_results", [])
@@ -421,7 +421,7 @@ class ScholarGraphAgent:
 
         return {"fused_paper_ids": fused_ids}
 
-    def _node_graph_expansion(self, state: ScholarGraphState) -> dict[str, Any]:
+    def _node_graph_expansion(self, state: PaperTrailState) -> dict[str, Any]:
         """Node 5: Fetches 1-hop subgraphs (authors, methods, categories) for fused candidate papers."""
         fused_ids = state["fused_paper_ids"]
         print(
@@ -444,7 +444,7 @@ class ScholarGraphAgent:
 
         return {"expanded_graph_context": expanded_map}
 
-    def _node_reranker(self, state: ScholarGraphState) -> dict[str, Any]:
+    def _node_reranker(self, state: PaperTrailState) -> dict[str, Any]:
         """Node 6: Cross-Encoder neural reranking over enriched paper payloads."""
         user_query = state["user_query"]
         fused_ids = state["fused_paper_ids"]
@@ -560,7 +560,7 @@ class ScholarGraphAgent:
             "retrieval": retrieval_debug,
         }
 
-    def _node_synthesis(self, state: ScholarGraphState) -> dict[str, Any]:
+    def _node_synthesis(self, state: PaperTrailState) -> dict[str, Any]:
         """Node 7: Synthesizes final response grounded exclusively in reranked evidence."""
         user_query = state["user_query"]
         conversation_history = state.get("conversation_history") or []
@@ -572,7 +572,7 @@ class ScholarGraphAgent:
         history_context = json.dumps(conversation_history[-12:], indent=2)
 
         synthesis_prompt = f"""
-        You are ScholarGraph, an expert academic research assistant.
+        You are PaperTrail, an expert academic research assistant.
         Write a detailed, well-organized answer to the USER QUERY using ONLY the
         reranked evidence below. Every claim MUST be supported by that evidence and list
         its supporting paper IDs in source_ids. Never hallucinate facts or citations
@@ -656,7 +656,7 @@ class ScholarGraphAgent:
         """Executes the complete GraphRAG pipeline."""
         if model_name is None:
             model_name = load_gemini_model_catalog()["default_model"]
-        initial_state: ScholarGraphState = {
+        initial_state: PaperTrailState = {
             "user_query": user_query,
             "model_name": model_name,
             "conversation_history": conversation_history or [],

@@ -1,6 +1,6 @@
 import pytest
 
-from scholargraph import agent as agent_module
+from papertrail import agent as agent_module
 
 
 @pytest.fixture(autouse=True)

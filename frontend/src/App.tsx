@@ -38,6 +38,9 @@ import {
   type RetrievalTrace,
 } from "./lib/api";
 
+const MODEL_STORAGE_KEY = "papertrail.geminiModel";
+const LEGACY_MODEL_STORAGE_KEY = "scholargraph.geminiModel";
+
 type Message = ChatTurn & {
   id: number | string;
   created_at: string;
@@ -99,15 +102,16 @@ function App() {
       .then((catalog) => {
         if (!mounted) return;
         setModels(catalog.models);
-        const savedModel = window.localStorage.getItem(
-          "scholargraph.geminiModel",
-        );
+        const savedModel =
+          window.localStorage.getItem(MODEL_STORAGE_KEY) ??
+          window.localStorage.getItem(LEGACY_MODEL_STORAGE_KEY);
         const preferredModel =
           savedModel && catalog.models.some(({ id }) => id === savedModel)
             ? savedModel
             : catalog.default_model;
         setSelectedModel(preferredModel);
-        window.localStorage.setItem("scholargraph.geminiModel", preferredModel);
+        window.localStorage.setItem(MODEL_STORAGE_KEY, preferredModel);
+        window.localStorage.removeItem(LEGACY_MODEL_STORAGE_KEY);
       })
       .catch((caught: unknown) => {
         if (mounted) {
@@ -253,7 +257,7 @@ function App() {
       setError(
         caught instanceof Error
           ? caught.message
-          : "Something went wrong while contacting ScholarGraph.",
+          : "Something went wrong while contacting PaperTrail.",
       );
       if (caught instanceof ApiRequestError) {
         setApiOnline(true);
@@ -295,7 +299,7 @@ function App() {
             <Atom size={23} strokeWidth={1.8} />
           </div>
           <div>
-            <div className="brand-name">ScholarGraph</div>
+            <div className="brand-name">PaperTrail</div>
           </div>
           <button
             className="icon-button mobile-close"
@@ -429,7 +433,7 @@ function App() {
                 onChange={(event) => {
                   setSelectedModel(event.target.value);
                   window.localStorage.setItem(
-                    "scholargraph.geminiModel",
+                    MODEL_STORAGE_KEY,
                     event.target.value,
                   );
                 }}
@@ -463,7 +467,7 @@ function App() {
               </h1>
               <p className="welcome-copy">
                 Ask a question across papers, methods, and research connections.
-                ScholarGraph brings your graph and literature together.
+                PaperTrail brings your graph and literature together.
               </p>
 
               <div className="suggestion-heading">
@@ -512,7 +516,7 @@ function App() {
                   )}
                   <div className="message-content-wrap">
                     <div className="message-label">
-                      {message.role === "assistant" ? "SCHOLARGRAPH" : "YOU"}
+                      {message.role === "assistant" ? "PAPERTRAIL" : "YOU"}
                     </div>
                     <div className="message-content">
                       {message.role === "assistant" ? (
@@ -630,7 +634,7 @@ function App() {
                   </div>
                   <div className="message-content-wrap">
                     <div className="message-label">
-                      SCHOLARGRAPH{" "}
+                      PAPERTRAIL{" "}
                       <span className="thinking-label">
                         SEARCHING YOUR LIBRARY
                       </span>
@@ -685,9 +689,9 @@ function App() {
               value={draft}
               onChange={(event) => handleDraftChange(event.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask ScholarGraph anything about your research..."
+              placeholder="Ask PaperTrail anything about your research..."
               rows={1}
-              aria-label="Message ScholarGraph"
+              aria-label="Message PaperTrail"
               maxLength={4000}
               disabled={busy}
             />
@@ -713,7 +717,7 @@ function App() {
             </div>
           </form>
           <div className="disclaimer">
-            ScholarGraph can make mistakes. Verify important findings against
+            PaperTrail can make mistakes. Verify important findings against
             the original papers.
           </div>
         </footer>

@@ -1,14 +1,14 @@
 # Application entry point / CLI interface
 import sys
-from .agent import ScholarGraphAgent
+from .agent import PaperTrailAgent
 
 
 def main():
     print("======================================================")
-    print("   ScholarGraph: Agentic GraphRAG Research Engine     ")
+    print("   PaperTrail: Agentic GraphRAG Research Engine       ")
     print("======================================================\n")
 
-    agent = ScholarGraphAgent()
+    agent = PaperTrailAgent()
 
     while True:
         try:
@@ -16,7 +16,7 @@ def main():
             if not query:
                 continue
             if query.lower() in ["exit", "quit", "q"]:
-                print("Exiting ScholarGraph. Goodbye!")
+                print("Exiting PaperTrail. Goodbye!")
                 sys.exit(0)
 
             response = agent.run_with_evidence(query)
@@ -29,7 +29,7 @@ def main():
             )
             print("------------------------------------------")
         except KeyboardInterrupt:
-            print("\nExiting ScholarGraph. Goodbye!")
+            print("\nExiting PaperTrail. Goodbye!")
             sys.exit(0)
 
 

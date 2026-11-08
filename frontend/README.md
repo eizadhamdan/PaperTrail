@@ -1,6 +1,6 @@
-# ScholarGraph Frontend
+# PaperTrail Frontend
 
-The frontend is a standalone React + TypeScript single-page application built with Vite. It presents the ScholarGraph research agent as a chat workspace and communicates with the Python backend through HTTP; it does not connect directly to Gemini, Neo4j, or ChromaDB.
+The frontend is a standalone React + TypeScript single-page application built with Vite. It presents the PaperTrail research agent as a chat workspace and communicates with the Python backend through HTTP; it does not connect directly to Gemini, Neo4j, or ChromaDB.
 
 For the repository architecture and GraphRAG concepts, see the [root README](../README.md). For backend installation, configuration, and endpoint details, see the [backend README](../backend/README.md).
 
@@ -46,7 +46,7 @@ Each saved assistant response includes an expandable **Retrieval evidence** sect
 ## Features and Data
 
 - Conversation list with create/delete controls
-- Gemini model selector populated by `backend/src/scholargraph/gemini_models.json`
+- Gemini model selector populated by `backend/src/papertrail/gemini_models.json`
 - Prompt suggestions, multiline composer, and loading/error states
 - Responsive layout for desktop and mobile
 - Recent turns loaded from backend SQLite for contextual follow-up questions

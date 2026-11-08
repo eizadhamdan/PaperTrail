@@ -1,20 +1,20 @@
-# ScholarGraph Backend
+# PaperTrail Backend
 
-The backend owns data ingestion utilities, graph/vector retrieval, the Gemini-powered research agent, and the HTTP API used by the React frontend. It is a Python 3.12 package under `src/scholargraph/`.
+The backend owns data ingestion utilities, graph/vector retrieval, the Gemini-powered research agent, and the HTTP API used by the React frontend. It is a Python 3.12 package under `src/papertrail/`.
 
 For the overall architecture and the GraphRAG concepts used here, see the [repository guide](../README.md).
 
 ## Components
 
-- `src/scholargraph/api.py`: FastAPI application. It exposes conversation CRUD, chat, and health endpoints.
-- `src/scholargraph/chat_store.py`: SQLite schema and persistence operations for conversations and ordered messages.
-- `src/scholargraph/agent.py`: Runs graph retrieval before vector retrieval, requires structured claims cited with retrieved paper IDs, and returns both an answer and retrieval trace.
-- `src/scholargraph/graph_store.py`: Creates the Neo4j driver, imports graph triples, and executes Cypher.
-- `src/scholargraph/vector_store.py`: Imports precomputed embeddings to ChromaDB and performs vector retrieval. The embedding model is cached for reuse within the process.
-- `src/scholargraph/graph_extractor.py`: Builds author, category, and method relationships from paper JSON; Gemini can enrich the concepts.
-- `src/scholargraph/embedding_generator.py`: Generates normalized abstract embeddings using SentenceTransformers.
-- `src/scholargraph/arxiv_fetcher.py`: Colab-oriented collection/preprocessing script. It currently imports Google Colab utilities and is not a local command-line fetcher.
-- `src/scholargraph/main.py`: Optional interactive CLI using the same agent as the HTTP API.
+- `src/papertrail/api.py`: FastAPI application. It exposes conversation CRUD, chat, and health endpoints.
+- `src/papertrail/chat_store.py`: SQLite schema and persistence operations for conversations and ordered messages.
+- `src/papertrail/agent.py`: Runs graph retrieval before vector retrieval, requires structured claims cited with retrieved paper IDs, and returns both an answer and retrieval trace.
+- `src/papertrail/graph_store.py`: Creates the Neo4j driver, imports graph triples, and executes Cypher.
+- `src/papertrail/vector_store.py`: Imports precomputed embeddings to ChromaDB and performs vector retrieval. The embedding model is cached for reuse within the process.
+- `src/papertrail/graph_extractor.py`: Builds author, category, and method relationships from paper JSON; Gemini can enrich the concepts.
+- `src/papertrail/embedding_generator.py`: Generates normalized abstract embeddings using SentenceTransformers.
+- `src/papertrail/arxiv_fetcher.py`: Colab-oriented collection/preprocessing script. It currently imports Google Colab utilities and is not a local command-line fetcher.
+- `src/papertrail/main.py`: Optional interactive CLI using the same agent as the HTTP API.
 - `tests/`: API, retrieval-order, citation-validation, and outage tests that do not need live Gemini or database services.
 
 ## Requirements
@@ -57,13 +57,13 @@ python -m pip install -e .
 Start the API from `backend/`:
 
 ```bash
-python -m uvicorn scholargraph.api:app --reload
+python -m uvicorn papertrail.api:app --reload
 ```
 
 The API listens at `http://127.0.0.1:8000` by default. Useful routes:
 
 - `GET /api/health` reports API process state and probes Neo4j. It returns `{"status":"ok","knowledge_graph_available":true}` when Neo4j is reachable, or `{"status":"degraded","knowledge_graph_available":false}` when it is not. It does not check Gemini or ChromaDB connectivity.
-- `GET /api/models` returns the Gemini models configured in `src/scholargraph/gemini_models.json`. Set `default_model` and add `{ "id": "gemini-model-id", "display_name": "Name shown in the UI" }` entries to make models selectable in the frontend. Reload the frontend after editing the file.
+- `GET /api/models` returns the Gemini models configured in `src/papertrail/gemini_models.json`. Set `default_model` and add `{ "id": "gemini-model-id", "display_name": "Name shown in the UI" }` entries to make models selectable in the frontend. Reload the frontend after editing the file.
 - `GET /api/conversations` lists saved conversations, newest first.
 - `POST /api/conversations` creates an empty conversation.
 - `GET /api/conversations/{id}` loads a conversation and its ordered messages.
@@ -81,7 +81,7 @@ For a successful request, retrieval order is Cypher generation, Neo4j traversal,
 The CLI can be run from the same `backend/` working directory:
 
 ```bash
-python -m scholargraph.main
+python -m papertrail.main
 ```
 
 ## Data Preparation
@@ -89,19 +89,19 @@ python -m scholargraph.main
 Paper artifacts live in the repository-level `data/` directory. From `backend/`, graph triples can be imported with:
 
 ```bash
-python -m scholargraph.graph_store --import ../data/graph_triples.json
+python -m papertrail.graph_store --import ../data/graph_triples.json
 ```
 
 To import precomputed vectors, provide the generated Parquet artifact:
 
 ```bash
-python -m scholargraph.vector_store --import ../data/arxiv_vectors.parquet
+python -m papertrail.vector_store --import ../data/arxiv_vectors.parquet
 ```
 
 `arxiv_vectors.parquet` may need to be generated or downloaded separately; it is not guaranteed to be present in a checkout. `graph_extractor.py` can create triples from the raw paper JSON:
 
 ```bash
-python -m scholargraph.graph_extractor --input ../data/raw_arxiv_papers.json --output ../data/graph_triples.json
+python -m papertrail.graph_extractor --input ../data/raw_arxiv_papers.json --output ../data/graph_triples.json
 ```
 
 Embedding generation is intended for a compute host with SentenceTransformers and may use a GPU when available. The current collection script is Colab-oriented. Artifact schemas are described in [`data/README.md`](../data/README.md).

@@ -4,7 +4,7 @@ from functools import lru_cache
 import chromadb
 import pandas as pd
 from sentence_transformers import SentenceTransformer
-from scholargraph.config import CHROMA_PERSIST_DIR, EMBEDDING_MODEL_NAME
+from papertrail.config import CHROMA_PERSIST_DIR, EMBEDDING_MODEL_NAME
 
 
 def get_chroma_client():

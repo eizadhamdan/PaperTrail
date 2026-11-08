@@ -39,7 +39,7 @@ filter_query = "has_abstract:true,concepts.id:C41008148|C154945302,from_publicat
 
 headers = {
     # Adding a descriptive user-agent is recommended by OpenAlex
-    "User-Agent": "ScholarGraph-Research/1.0 (mailto:your_email@example.com)"
+    "User-Agent": "PaperTrail-Research/1.0 (mailto:your_email@example.com)"
 }
 
 print(f"Fetching up to {TARGET_COUNT} papers from OpenAlex...")

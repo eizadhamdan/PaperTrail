@@ -4,9 +4,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from scholargraph import agent as agent_module
-from scholargraph import graph_store, vector_store
-from scholargraph.agent import ScholarGraphAgent, reciprocal_rank_fusion
+from papertrail import agent as agent_module
+from papertrail import graph_store, vector_store
+from papertrail.agent import PaperTrailAgent, reciprocal_rank_fusion
 
 
 # ---------------------------------------------------------------------------
@@ -36,7 +36,7 @@ def test_rrf_still_ranks_unique_lists_by_combined_score() -> None:
 
 
 def test_candidate_fusion_ignores_repeated_graph_rows() -> None:
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     graph_rows = [
         {"paper_id": "X", "author": "Author 1"},
         {"paper_id": "X", "author": "Author 2"},
@@ -92,7 +92,7 @@ def _agent_with_recording_reranker():
         scored_pairs.extend(pairs)
         return [0.5 for _ in pairs]
 
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     agent.reranker = SimpleNamespace(predict=predict)
     return agent, scored_pairs
 

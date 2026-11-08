@@ -15,7 +15,7 @@ from .agent import (
     GroundingValidationError,
     InsufficientEvidenceError,
     ModelUnavailableError,
-    ScholarGraphAgent,
+    PaperTrailAgent,
 )
 from . import chat_store
 from .config import load_gemini_model_catalog
@@ -103,8 +103,8 @@ class GeminiModelCatalog(BaseModel):
 
 
 @lru_cache(maxsize=1)
-def get_agent() -> ScholarGraphAgent:
-    return ScholarGraphAgent()
+def get_agent() -> PaperTrailAgent:
+    return PaperTrailAgent()
 
 
 @asynccontextmanager
@@ -113,7 +113,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="ScholarGraph API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="PaperTrail API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -297,7 +297,7 @@ async def chat(request: ChatRequest) -> ChatResponse:
             ),
         ) from error
     except Exception as error:
-        logger.exception("ScholarGraph query failed")
+        logger.exception("PaperTrail query failed")
         raise HTTPException(
             status_code=500,
             detail="The research query could not be completed. Check the backend logs.",

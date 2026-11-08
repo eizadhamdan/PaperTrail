@@ -2,14 +2,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from scholargraph import agent as agent_module
-from scholargraph.agent import (
+from papertrail import agent as agent_module
+from papertrail.agent import (
     SYNTHESIS_MAX_CLAIMS,
     SYNTHESIS_MIN_CLAIMS,
     GroundedClaim,
     GroundedResponse,
     GroundingValidationError,
-    ScholarGraphAgent,
+    PaperTrailAgent,
     format_grounded_answer,
 )
 
@@ -105,7 +105,7 @@ def _synthesis_state() -> dict:
     }
 
 
-def _agent_returning(claims: list[GroundedClaim], captured: dict) -> ScholarGraphAgent:
+def _agent_returning(claims: list[GroundedClaim], captured: dict) -> PaperTrailAgent:
     class Models:
         def generate_content(self, **kwargs):
             captured.update(kwargs)
@@ -113,7 +113,7 @@ def _agent_returning(claims: list[GroundedClaim], captured: dict) -> ScholarGrap
                 text=GroundedResponse(claims=claims).model_dump_json()
             )
 
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     agent.client = SimpleNamespace(models=Models())
     return agent
 
@@ -175,7 +175,7 @@ def test_reranker_keeps_title_and_publication_date_for_the_sources_list(
             }
         },
     )
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     agent.reranker = SimpleNamespace(predict=lambda pairs: [0.5 for _ in pairs])
 
     result = agent._node_reranker(

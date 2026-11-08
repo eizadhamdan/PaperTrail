@@ -3,17 +3,17 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-from scholargraph import agent as agent_module
-from scholargraph import api, chat_store
-from scholargraph.agent import (
+from papertrail import agent as agent_module
+from papertrail import api, chat_store
+from papertrail.agent import (
     AgentResult,
     GroundedClaim,
     GroundedResponse,
     GroundingValidationError,
     ModelUnavailableError,
-    ScholarGraphAgent,
+    PaperTrailAgent,
 )
-from scholargraph.graph_store import (
+from papertrail.graph_store import (
     GraphQueryError,
     GraphUnavailableError,
     run_cypher_query,
@@ -371,7 +371,7 @@ def test_graph_query_failure_is_not_returned_as_result_data(monkeypatch) -> None
             pass
 
     monkeypatch.setattr(
-        "scholargraph.graph_store.get_neo4j_driver", lambda: FailedDriver()
+        "papertrail.graph_store.get_neo4j_driver", lambda: FailedDriver()
     )
 
     with pytest.raises(GraphUnavailableError):
@@ -397,7 +397,7 @@ def test_invalid_cypher_is_distinguished_from_connection_failure(monkeypatch) ->
             pass
 
     monkeypatch.setattr(
-        "scholargraph.graph_store.get_neo4j_driver", lambda: InvalidDriver()
+        "papertrail.graph_store.get_neo4j_driver", lambda: InvalidDriver()
     )
 
     with pytest.raises(GraphQueryError):
@@ -413,7 +413,7 @@ def test_agent_stops_before_vector_retrieval_on_graph_failure(monkeypatch) -> No
             return SimpleNamespace(text="MATCH (p:Paper) RETURN p")
 
     models = Models()
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     agent.client = SimpleNamespace(models=models)
     monkeypatch.setattr(agent_module, "check_graph_connection", lambda: True)
 
@@ -440,7 +440,7 @@ def test_agent_refuses_before_cypher_generation_when_graph_is_offline(
         def generate_content(self, **_kwargs):
             pytest.fail("Gemini must not be called while Neo4j is offline")
 
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     agent.client = SimpleNamespace(models=Models())
     monkeypatch.setattr(agent_module, "check_graph_connection", lambda: False)
 
@@ -464,7 +464,7 @@ def test_agent_runs_graph_then_vector_then_grounded_synthesis(monkeypatch) -> No
             )
             return SimpleNamespace(text=response.model_dump_json())
 
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     agent.client = SimpleNamespace(models=Models())
     agent.reranker = SimpleNamespace(
         predict=lambda pairs: [0.9 for _ in pairs]
@@ -541,7 +541,7 @@ def test_fallback_graph_query_checks_methods_and_categories_separately(
         return []
 
     monkeypatch.setattr(agent_module, "run_cypher_query", graph_search)
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
 
     agent._node_graph_retrieval(
         {"cypher_query": "MATCH (p:Paper) RETURN p.id", "user_query": "graph methods"}
@@ -570,7 +570,7 @@ def test_agent_rejects_citations_not_in_retrieved_sources(monkeypatch) -> None:
             )
             return SimpleNamespace(text=response.model_dump_json())
 
-    agent = ScholarGraphAgent.__new__(ScholarGraphAgent)
+    agent = PaperTrailAgent.__new__(PaperTrailAgent)
     agent.client = SimpleNamespace(models=Models())
     agent._generate_cypher = lambda _query: "MATCH (p:Paper) RETURN p.id AS paper_id"
     monkeypatch.setattr(agent_module, "check_graph_connection", lambda: True)
